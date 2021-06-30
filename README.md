@@ -17,5 +17,5 @@ include:
 https://gitlab.com/gitlab-org/gitlab-foss/-/blob/master/doc/development/cicd/templates.md
 
 # Gitlab Supported Templates
-https://gitlab.com/gitlab-org/gitlab-foss/-/tree/master/lib/gitlab/ci/templates/Security
-https://gitlab.com/gitlab-org/gitlab-foss/-/tree/master/lib/gitlab/ci/templates/Jobs
+* https://gitlab.com/gitlab-org/gitlab-foss/-/tree/master/lib/gitlab/ci/templates/Security
+* https://gitlab.com/gitlab-org/gitlab-foss/-/tree/master/lib/gitlab/ci/templates/Jobs
