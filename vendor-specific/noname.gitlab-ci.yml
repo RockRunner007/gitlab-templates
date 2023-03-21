@@ -1,0 +1,42 @@
+stages:
+    - noname-scan
+    - my-deploy
+
+variables:
+    ACTIVE_API_URL: # can be over ridden by the user
+        value: "https://{vendor}.nonamesec.com/active/api/graphql"
+    ACTIVE_SEVERITY_THRESHOLD:
+        value: medium
+        description: build disturb on error level supported values [high , medium, low, info, none]
+    ACTIVE_TEST_SUITE_ID:
+        value: {test suite} # your test-suite-id
+#   ACTIVE_SCAN_TARGET_BASE_URL: # can be over ridden by the user
+#     value: "" # you can override the default scan target base url
+
+scan-job: # This job runs in the build stage, which runs first.
+    stage: noname-scan
+    image: docker:20.10
+    services:
+        - docker:20.10-dind
+    before_script:
+        - |
+        docker login \
+        --username devops@nonamesecurity.com \
+        --password $ACTIVE_REGISTRY_PASSWORD nonamesec.jfrog.io/noname-docker-release
+    script:
+        - |
+        docker run \
+        --pull always \
+        nonamesec.jfrog.io/noname-docker-release/active-cli \
+        scan \
+        --api-url=$ACTIVE_API_URL \
+        --api-token=$ACTIVE_API_TOKEN \
+        --test-suite-id=$ACTIVE_TEST_SUITE_ID \
+        --severity-threshold=$ACTIVE_SEVERITY_THRESHOLD      
+    # --base-url=$ACTIVE_SCAN_TARGET_BASE_URL
+
+deploy-job:
+    stage: my-deploy
+    script:
+        - echo "Deploying application..."
+        - echo "Application successfully deployed."

@@ -1,0 +1,95 @@
+include:
+  #- '/templates/Secret-Detection.yml'
+  #- '/templates/Dependency.yml'
+  #- '/templates/License.yml'
+  #- '/templates/SAST.yml'
+  #- '/templates/Container-Scanning.yml'
+  #- '/templates/DAST.yml'
+  
+stages:
+  #- secrets
+  #- dependency
+  #- license
+  #- sast
+  #- build
+  #- containersecurity
+  #- check_results
+  #- dast
+
+#secret_detection:
+  #stage: secrets
+  #artifacts:
+    #expire_in: 30 day
+  #variables:
+    #SECRET_DETECTION_EXCLUDED_PATHS: ""
+
+# dependency_scanning:
+#   stage: dependency
+#   artifacts:
+#     expire_in: 30 day
+
+# license_scanning:
+#   stage: license
+#   artifacts:
+#     expire_in: 30 day
+#   variables:
+#     CI_DEBUG_TRACE: "true"
+
+#sast:
+  #stage: sast
+  #artifacts:
+    #expire_in: 30 day
+  #variables:
+    #SEARCH_MAX_DEPTH: 4
+    #SAST_EXCLUDED_ANALYZERS: ""
+    #SAST_EXCLUDED_PATHS: "spec, test, tests, tmp"
+    #SCAN_KUBERNETES_MANIFESTS: "false"
+
+#build:
+  #image: docker:latest
+  #stage: build
+  #services:
+    #- docker:dind
+  #variables:
+    #IMAGE: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG:$CI_COMMIT_SHA
+  #script:
+    #- docker info
+    #- docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    #- docker build -t $IMAGE .
+    #- docker push $IMAGE
+
+#container_scanning:
+  #stage: containersecurity
+  #artifacts:
+    #expire_in: 30 day
+    #paths:
+      #- gl-container-scanning-report.json
+  #variables:
+    #GIT_STRATEGY: fetch
+    #CI_APPLICATION_REPOSITORY: $CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG
+    #CI_APPLICATION_TAG: $CI_COMMIT_SHA
+  #rules:
+    #- if: '$CI =~ /.*/'
+      #when: always
+
+#scanning_results:
+  #stage: check_results
+  #image: gitlab-registry.cern.ch/ci-tools/ci-worker:cc7
+  #script:
+  #- jq -e "( .vulnerabilities | length ) > 0" ./gl-container-scanning-report.json
+  #dependencies:
+    #- container_scanning
+  #allow_failure: true
+  
+#dast:
+  #stage: dast
+  #artifacts:
+    #expire_in: 30 day
+  #before_script:
+    #- mkdir -p /zap/wrk
+    #- cp api-specification.yml /zap/wrk/api-specification.yml
+  #variables:
+    #DAST_WEBSITE: https://about.me/rockrunner
+    #DAST_FULL_SCAN_ENABLED: "true"
+    #GIT_STRATEGY: fetch
+    #DAST_API_OPENAPI: api-specification.yml
