@@ -1,0 +1,50 @@
+image: 
+  name: "hashicorp/terraform:1.0.0"
+  entrypoint:
+    - '/usr/bin/env'
+    - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+variables: 
+  TF_ROOT: ${CI_PROJECT_DIR}
+  TF_IN_AUTOMATION: "true"
+  PLAN: plan.cache
+  PLAN_JSON: plan.json
+
+stages:
+  - artifacts
+
+push_events:
+  stage: .pre
+  script: 
+    - echo "This job creates double pipelines!"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+    
+artifacts:
+  stage: artifacts
+  image: node:latest
+  allow_failure: true
+  script:
+    - apt-get update && apt-get install -y jq python3 python3-pip python3-venv
+    - pip3 install cyclonedx-bom
+    - cd ${CI_ENVIRONMENT_NAME}
+    - python3 -m venv . venv
+    - source bin/activate
+    - pip3 install -r requirements.txt
+    - echo "generate sbom"
+    - cyclonedx-py -r --format json -o sbom.json
+  after_script:
+    - ls
+    - ls ${CI_ENVIRONMENT_NAME}
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  artifacts:
+    when: always
+    untracked: false
+    expire_in: 30 days
+    paths:
+      - "${CI_ENVIRONMENT_NAME}/sbom.json"
+  environment:
+    name: src
+  tags:
+    - gitlab-org
